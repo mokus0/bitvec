@@ -110,7 +110,11 @@ instance U.Unbox Bit
 
 instance MV.MVector U.MVector Bit where
 #if MIN_VERSION_vector(0,11,0)
-    basicInitialize (BitMVec _ _ v) = MV.basicInitialize v
+    basicInitialize (BitMVec 0 _ v) = MV.basicInitialize v
+    basicInitialize (BitMVec s _ v) = do
+        x <- MV.basicUnsafeRead v 0
+        MV.basicInitialize v
+        MV.basicUnsafeWrite v 0 (x .&. (1 `shiftL` s - 1))
 #endif
     
     basicUnsafeNew       n   = liftM (BitMVec 0 n) (MV.basicUnsafeNew       (nWords n))
